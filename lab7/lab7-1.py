@@ -20,10 +20,13 @@ tmp_ist=[]
 oper_ist=[]
 class tree:
     
-    def __init__(self,Data):
+    def __init__(self,Data,ist=False):
         self.left=None
         self.right=None
         self.data=Data
+        #if ist:
+        oper_ist=[]
+        tmp_ist=[]
     def setData(self,Data):
         self.data=Data
     def setLeft(self,Left):
@@ -39,7 +42,7 @@ class tree:
         if self.right: self.right.upDown()
     def estim(self):
         #print self.data
-
+        global tmp_ist, oper_ist,dictt
         if is_op(self.data):
             opp_rez=op(self.data,self.left.estim(),self.right.estim())
             oper_ist.append(self.data)
@@ -56,7 +59,7 @@ class tree:
                 tmp_ist.append(opp_rez)
                 return opp_rez
         #print op()
-
+    
 
 def split_by_zn(zn,expr):    
     list_sp=[]
@@ -179,9 +182,8 @@ def is_op(oper):
     return False
 
 def expr_estim(expr):
+    global tmp_ist, oper_ist,dictt
 
-    
-    print tmp_ist
     list_ist=[]
     
     dictt['+']=True
@@ -200,16 +202,23 @@ def expr_estim(expr):
     for i in range(pow(2 , len(list_char))):
         list_isft=[]
         for el in list_char:
-            dictt[el]=is_set(i,list_char.index(el))
+            if el!='+' and el!='-':
+                dictt[el]=is_set(i,list_char.index(el))
             list_isft.append(dictt[el])
 
+
         tree_expr(expr).estim()
+        #estim(tree_expr(expr),True)
+
         
-        for j in range(i*4,i*4+4):
+        for j in range(len(tmp_ist)):
+        #for j in range(i*4,i*4+4):
+            #print j
+            #raw_input()
             list_isft.append(tmp_ist[j])
-
+        tmp_ist=[]
         list_ist.append(list_isft)
-
+    
     print 'list_ist: '
     for i in range(len(list_ist[0])):
         print oper_ist[i],'\t',
@@ -218,24 +227,76 @@ def expr_estim(expr):
         for j in range(len(i)):
             print i[j],'\t',
         print ''
-
+    
     return list_ist
 
+def exp(expr):
+    global tmp_ist, oper_ist
+    oper_ist=[]
+    tmp_ist=[]
+    return expr_estim(expr)
+
+def replace_expr(expr,re_dict):
+    strr=expr
+    for el in re_dict:
+
+        strr=strr.replace(el[0],el[1])
+        print strr
 
 
+    while strr.find('не ')!=-1:
+        place=strr.find('не ')
+
+        strr=strr[0:place]+strr[place+3].upper()+ strr[place+4:]
+        print strr
+
+    strr=strr.replace(' ','')
+    
+    return strr
+def column(matrix, i):
+    return [row[i] for row in matrix]
 expr=raw_input('Please input expression [ default expression (p~q)V(P~q)] : ')
 if expr=='': expr='(p~q)V(P~q)'
-expr_estim(expr)
+exp(expr)
+#print 'oper_ist:',oper_ist
+
+
+
+my_dict=[['холодно','p'],['падає сніг','q'],['падав сніг','q'],['падатиме сніг','q'],
+[', то також','>'],['для того, щоб було',''],['якщо',''],[', необхідно і достатньо, щоб','~'],[' і ',' A '],['та','V'],['або','V']]
 
 
 
 
-#холодно і не падає сніг
-expr_estim('pAQ')
-tmp_ist=[]
-print tmp_ist
-#не холодно і не падає сніг
-#якщо сьогодні холодно, то також падає сніг
-#для того, щоб сьогодні було холодно, необхідно і достатньо, щоб падав сніг
+#oper_ist=[]
+#print 'oper_list:',oper_ist
 
+exp(replace_expr('холодно та не падає сніг',my_dict))
+exp(replace_expr('не холодно і не падає сніг',my_dict))
+exp(replace_expr('якщо холодно, то також падає сніг',my_dict))
+exp(replace_expr('для того, щоб було холодно, необхідно і достатньо, щоб падав сніг',my_dict))
+
+
+
+print '####################'
+
+
+list_exp=['p>q','PVq','Q>P','(pAQ)>P','(pAQ)>q' ]#,'(pAQ)>-']
+list_rez_el=[]
+r= exp(list_exp[0])
+
+list_rez_el.append(list(column(r,len(r[0])-1)))
+print list_rez_el[0]
+
+for el in list_exp[1:]:
+    
+    list_ist= exp(el)
+    #print len(list_ist[0])
+    rez= column(list_ist,len(list_ist[0])-1)
+    print rez
+    
+    if rez==list_rez_el[0]:
+        print 'equal'
+    else: print 'not equal'
+    list_rez_el.append(list(rez))
 
